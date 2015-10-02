@@ -3,4 +3,5 @@
 path = "../data/MNIST_Dataset.mat";
 [training, testing] = load_data(path);
 kernel = make_kernel(training.images, training.labels);
-hidden = compute_hidden(kernel, training.images, training.labels)
+hidden = compute_hidden(kernel, training.images, training.labels);
+params = fit_parameter(hidden, training.labels)

@@ -1,4 +1,4 @@
-function [center, mvar] = kernel_of(imgK)
-  center = mean(imgK);
-  mvar = mean(var(imgK));
+function [center, mvar] = kernel_of(imagesK)
+  center = mean(imagesK);
+  mvar = mean(var(imagesK));
 end

@@ -1,9 +1,9 @@
-function [imgK] = instance_of(k, img, label)
-  N = length(label);
-  imgK = [];
+function [imagesK] = instance_of(k, images, labels)
+  N = length(labels);
+  imagesK = [];
   for i = 1:N
-    if label(i) == k
-      imgK = [imgK; img(i,:)];
+    if labels(i) == k
+      imagesK = [imagesK; images(i,:)];
     end
   end
 end

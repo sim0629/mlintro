@@ -1,8 +1,8 @@
 % 2009-11744 심규민
 
-datasetPath = "../data/MNIST_Dataset.mat";
-[trainingData, testingData] = load_data(datasetPath);
-hidden = compute_hidden(10, trainingData.Images, trainingData.Labels);
-actual = one_of_n(trainingData.Labels);
+path = "../data/MNIST_Dataset.mat";
+[training, testing] = load_data(path);
+hidden = compute_hidden(10, training.images, training.labels);
+actual = one_of_n(training.labels);
 param = pinv(hidden) * actual;
 param

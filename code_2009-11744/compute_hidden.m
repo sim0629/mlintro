@@ -1,11 +1,11 @@
-function [hidden] = compute_hidden(K, img, label)
-  [N, D] = size(img);
+function [hidden] = compute_hidden(K, images, labels)
+  [N, D] = size(images);
   hidden = ones(N, K);
   for k = 1:K
-    imgK = instance_of(k - 1, img, label);
-    [centerK, mvarK] = kernel_of(imgK);
+    imagesK = instance_of(k - 1, images, labels);
+    [centerK, mvarK] = kernel_of(imagesK);
     for n = 1:N
-      diff = img(n,:) - centerK;
+      diff = images(n,:) - centerK;
       mult = -0.5 * diff * diff' / 10;
       hidden(n, k) = exp(mult);
     end

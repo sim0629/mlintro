@@ -1,4 +1,4 @@
-function [hidden] = compute_hidden(kernel, images, labels)
+function [hidden] = compute_hidden(kernel, images)
   K = length(kernel.vars);
   [N, D] = size(images);
   hidden = zeros(N, K);

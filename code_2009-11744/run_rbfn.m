@@ -9,7 +9,7 @@ kernel = make_kernel(training.images, training.labels);
 etaM = 0.3;
 etaV = 0.1;
 
-fprintf('etaM = %.3f, etaV = %.3f\n', etaM, etaV);
+fprintf('etaM = %.2f, etaV = %.2f\n', etaM, etaV);
 
 EPOCH = 90
 for epoch = 1 : EPOCH
@@ -20,7 +20,7 @@ for epoch = 1 : EPOCH
   success = success_rate(results, training.labels);
 
   now = toc(start);
-  fprintf('[%03d] success = %.3f%%, elapsed = %.1fs\n', epoch, success * 100, now);
+  fprintf('[%03d] success = %.2f%%, elapsed = %.1fs\n', epoch, success * 100, now);
 
   if epoch == EPOCH
     break
@@ -33,5 +33,5 @@ end
 
 results = guess(params, kernel, testing.images);
 success = success_rate(results, testing.labels);
-fprintf('success = %.3f%%\n', success * 100);
+fprintf('success = %.2f%%\n', success * 100);
 save_result(results);

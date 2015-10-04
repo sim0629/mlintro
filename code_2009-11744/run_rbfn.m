@@ -1,6 +1,7 @@
 % 2009-11744 심규민
 
 start = tic;
+prev = start;
 
 path = '../data/MNIST_Dataset.mat';
 [training, testing] = load_data(path);
@@ -21,9 +22,13 @@ for epoch = 1 : EPOCH
 
   now = toc(start);
   fprintf('[%03d] success = %.2f%%, elapsed = %.1fs\n', epoch, success * 100, now);
+  if now + (now - prev) > start + 555
+    break;
+  end
+  prev = now;
 
   if epoch == EPOCH
-    break
+    break;
   end
 
   delta = get_delta(etaM, etaV, results, params, hidden, kernel, training.images, training.labels);

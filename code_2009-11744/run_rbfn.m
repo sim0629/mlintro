@@ -6,6 +6,8 @@ prev = start;
 path = '../data/MNIST_Dataset.mat';
 [training, testing] = load_data(path);
 kernel = make_kernel(training.images, training.labels);
+success = simple_gaussian(kernel, testing.images, testing.labels);
+fprintf('simple gaussian success = %.2f%%\n', success * 100);
 
 etaM = 0.3;
 etaV = 0.1;

@@ -1,6 +1,6 @@
 function [dvar] = compute_dvar(kernel, images)
   K = length(kernel.vars);
-  [N, D] = size(images);
+  [N, ~] = size(images);
   dvar = zeros(N, K);
   for k = 1 : K
     meanK = kernel.means(k, :);

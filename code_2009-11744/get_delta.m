@@ -1,7 +1,7 @@
 function [delta] = get_delta(etaM, etaV, results, params, hidden, kernel, images, labels)
   y = one_of_n(labels);
   w = reset_bias(params);
-  common = ((y .- results) * w') .* hidden;
+  common = ((y - results) * w') .* hidden;
 
   dmean = compute_dmean(kernel, images);
   [N, D, K] = size(dmean);

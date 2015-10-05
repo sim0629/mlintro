@@ -1,4 +1,4 @@
-% 2009-11744 심규민
+% 2009-11744 Gyumin Sim
 
 start = tic;
 prev = start;
@@ -32,8 +32,8 @@ for epoch = 1 : EPOCH
   end
 
   delta = get_delta(etaM, etaV, results, params, hidden, kernel, training.images, training.labels);
-  kernel.means += delta.means;
-  kernel.vars += delta.vars;
+  kernel.means = kernel.means + delta.means;
+  kernel.vars = kernel.vars + delta.vars;
 end
 
 results = guess(params, kernel, testing.images);

@@ -1,5 +1,5 @@
 function [kernel] = make_kernel(images, labels)
-  [N, D] = size(images);
+  [~, D] = size(images);
   K = 10;
   kernel.means = zeros(K, D);
   kernel.vars = zeros(K, 1);

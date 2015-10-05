@@ -1,6 +1,6 @@
 function [hidden] = compute_hidden(kernel, images)
   K = length(kernel.vars);
-  [N, D] = size(images);
+  [N, ~] = size(images);
   hidden = zeros(N, K);
   for k = 1 : K
     meanK = kernel.means(k, :);

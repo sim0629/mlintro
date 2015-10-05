@@ -1,4 +1,4 @@
 function [out] = reset_bias(in)
-  [R, C] = size(in);
+  [R, ~] = size(in);
   out = in(2 : R, :);
 end

@@ -12,7 +12,7 @@ etaV = 0.1;
 
 fprintf('etaM = %.2f, etaV = %.2f\n', etaM, etaV);
 
-EPOCH = 90
+EPOCH = 90;
 for epoch = 1 : EPOCH
   hidden = compute_hidden(kernel, training.images);
   params = fit_parameter(hidden, training.labels);

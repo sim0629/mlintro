@@ -1,4 +1,4 @@
-function [] = draw_kernel_image(kernel)
+function [] = draw_kernel_image(kernel, holdon)
   [K, D] = size(kernel.means);
   d = sqrt(D);
   kernelImage = zeros(d, d * K);
@@ -6,7 +6,12 @@ function [] = draw_kernel_image(kernel)
     kernelImageK = reshape(kernel.means(k, :), d, d);
     kernelImage(:, (k - 1) * d + 1 : k * d) = kernelImageK;
   end
-  figure;
+  if holdon
+    clf;
+    hold on;
+  else
+    figure;
+  end
   imshow(mat2gray(kernelImage));
   drawnow;
 end

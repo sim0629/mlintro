@@ -1,7 +1,7 @@
 % 2009-11744 Gyumin Sim
 
 start = tic;
-prev = start;
+prev = 0;
 
 path = '../data/MNIST_Dataset.mat';
 [training, testing] = load_data(path);
@@ -9,12 +9,12 @@ kernel = make_kernel(training.images, training.labels);
 success = simple_gaussian(kernel, testing.images, testing.labels);
 fprintf('simple gaussian success = %.2f%%\n', success * 100);
 
-etaM = 0.3;
+etaM = 0.01;
 etaV = 0.1;
 
 fprintf('etaM = %.2f, etaV = %.2f\n', etaM, etaV);
 
-EPOCH = 90;
+EPOCH = 999;
 for epoch = 1 : EPOCH
   hidden = compute_hidden(kernel, training.images);
   params = fit_parameter(hidden, training.labels);
@@ -24,7 +24,7 @@ for epoch = 1 : EPOCH
 
   now = toc(start);
   fprintf('[%03d] success = %.2f%%, elapsed = %.1fs\n', epoch, success * 100, now);
-  if now + (now - prev) > start + 555
+  if now + (now - prev) > 555
     break;
   end
   prev = now;

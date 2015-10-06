@@ -2,16 +2,16 @@
 
 start = tic;
 
+K = 30;
+etaM = 0.03;
+etaV = 0.1;
+fprintf('K = %d, etaM = %.2f, etaV = %.2f\n', K, etaM, etaV);
+
 path = '../data/MNIST_Dataset.mat';
 [training, testing] = load_data(path);
-kernel = make_kernel(training.images, training.labels);
+kernel = make_kernel(30, training.images, training.labels);
 success = simple_gaussian(kernel, testing.images, testing.labels);
 fprintf('simple gaussian success = %.2f%%\n', success * 100);
-
-etaM = 0.01;
-etaV = 0.1;
-
-fprintf('etaM = %.2f, etaV = %.2f\n', etaM, etaV);
 
 prev = toc(start);
 

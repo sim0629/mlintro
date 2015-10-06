@@ -1,10 +1,10 @@
-function [kernel] = make_kernel(images, labels)
+function [kernel] = make_kernel(K, images, ~)
+  labels = kmeans(images, K);
   [~, D] = size(images);
-  K = 10;
   kernel.means = zeros(K, D);
   kernel.vars = zeros(K, 1);
   for k = 1 : K
-    imagesK = instance_of(k - 1, images, labels);
+    imagesK = instance_of(k, images, labels);
     meanK = mean(imagesK);
     diffK = bsxfun(@minus, imagesK, meanK);
     varK = mean(sum(diffK .^ 2, 2));

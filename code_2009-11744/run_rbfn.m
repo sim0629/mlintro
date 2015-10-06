@@ -1,7 +1,6 @@
 % 2009-11744 Gyumin Sim
 
 start = tic;
-prev = 0;
 
 path = '../data/MNIST_Dataset.mat';
 [training, testing] = load_data(path);
@@ -13,6 +12,8 @@ etaM = 0.01;
 etaV = 0.1;
 
 fprintf('etaM = %.2f, etaV = %.2f\n', etaM, etaV);
+
+prev = toc(start);
 
 EPOCH = 999;
 for epoch = 1 : EPOCH

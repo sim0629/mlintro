@@ -2,16 +2,21 @@
 
 start = tic;
 
-K = 30;
-etaM = 0.03;
-etaV = 0.1;
-fprintf('K = %d, etaM = %.2f, etaV = %.2f\n', K, etaM, etaV);
+if length(argv()) == 0
+  K = 10;
+  etaM = 0.01;
+  etaV = 0.1;
+else
+  K = str2num(argv(){1});
+  etaM = str2num(argv(){2});
+  etaV = str2num(argv(){3});
+end
+
+fprintf('K = %d, etaM = %.3f, etaV = %.3f\n', K, etaM, etaV);
 
 path = '../data/MNIST_Dataset.mat';
-[training, testing] = load_data(path);
-kernel = make_kernel(30, training.images, training.labels);
-success = simple_gaussian(kernel, testing.images, testing.labels);
-fprintf('simple gaussian success = %.2f%%\n', success * 100);
+[training, validation, testing] = load_data(path);
+kernel = make_kernel(K, training.images, training.labels);
 
 prev = toc(start);
 
@@ -20,11 +25,14 @@ for epoch = 1 : EPOCH
   hidden = compute_hidden(kernel, training.images);
   params = fit_parameter(hidden, training.labels);
 
+  resultsV = guess(params, kernel, validation.images);
+  successV = success_rate(resultsV, validation.labels);
+
   results = guess(params, kernel, training.images);
   success = success_rate(results, training.labels);
 
   now = toc(start);
-  fprintf('[%03d] success = %.2f%%, elapsed = %.1fs\n', epoch, success * 100, now);
+  fprintf('[%03d] validation = %.2f%%, training = %.2f%%, elapsed = %.1fs\n', epoch, successV * 100, success * 100, now);
   if now + (now - prev) > 555
     break;
   end

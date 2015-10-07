@@ -1,5 +1,5 @@
-function [kernel] = make_kernel(K, images, ~)
-  labels = kmeans(images, K);
+function [kernel] = make_kernel(K, images, labels)
+  labels = kmeans_gyumin(K, images, labels);
   [~, D] = size(images);
   kernel.means = zeros(K, D);
   kernel.vars = zeros(K, 1);

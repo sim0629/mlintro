@@ -32,7 +32,7 @@ for epoch = 1 : EPOCH
 
   now = toc(start);
   fprintf('[%03d] validation = %.2f%%, training = %.2f%%, elapsed = %.1fs\n', epoch, successV * 100, success * 100, now);
-  if now + (now - prev) > 555
+  if now + 2 * (now - prev) > 600
     break;
   end
   prev = now;

@@ -2,31 +2,30 @@
 
 start = tic;
 
-if length(argv()) == 0
-  K = 10;
-  etaM = 0.01;
-  etaV = 0.1;
-else
-  K = str2num(argv(){1});
-  etaM = str2num(argv(){2});
-  etaV = str2num(argv(){3});
-end
+K = 2000;
+etaM = 0.1;
+etaV = 0.1;
+EPOCH = 1;
+novalid = false;
 
-fprintf('K = %d, etaM = %.3f, etaV = %.3f\n', K, etaM, etaV);
+fprintf('K = %d, etaM = %.3f, etaV = %.3f, EPOCH = %d\n', K, etaM, etaV, EPOCH);
 
 path = '../data/MNIST_Dataset.mat';
-[training, validation, testing] = load_data(path);
+[training, validation, testing] = load_data(path, novalid);
 kernel = make_kernel(K, training.images, training.labels);
 
 prev = toc(start);
 
-EPOCH = 999;
 for epoch = 1 : EPOCH
   hidden = compute_hidden(kernel, training.images);
   params = fit_parameter(hidden, training.labels);
 
-  resultsV = guess(params, kernel, validation.images);
-  successV = success_rate(resultsV, validation.labels);
+  if novalid
+    successV = 0;
+  else
+    resultsV = guess(params, kernel, validation.images);
+    successV = success_rate(resultsV, validation.labels);
+  end
 
   results = guess(params, kernel, training.images);
   success = success_rate(results, training.labels);

@@ -1,5 +1,5 @@
 
-CIFAR_DIR='/path/to/cifar/cifar-10-batches-mat/';
+CIFAR_DIR='../cifar-10-batches-mat/';
 
 assert(~strcmp(CIFAR_DIR, '/path/to/cifar/cifar-10-batches-mat/'), ...
        ['You need to modify kmeans_demo.m so that CIFAR_DIR points to ' ...
@@ -16,11 +16,11 @@ CIFAR_DIM=[32 32 3];
 
 %% Load CIFAR training data
 fprintf('Loading training data...\n');
-f1=load([CIFAR_DIR '/data_batch_1.mat']);
-f2=load([CIFAR_DIR '/data_batch_2.mat']);
-f3=load([CIFAR_DIR '/data_batch_3.mat']);
-f4=load([CIFAR_DIR '/data_batch_4.mat']);
-f5=load([CIFAR_DIR '/data_batch_5.mat']);
+f1=load([CIFAR_DIR 'data_batch_1.mat']);
+f2=load([CIFAR_DIR 'data_batch_2.mat']);
+f3=load([CIFAR_DIR 'data_batch_3.mat']);
+f4=load([CIFAR_DIR 'data_batch_4.mat']);
+f5=load([CIFAR_DIR 'data_batch_5.mat']);
 
 trainX = double([f1.data; f2.data; f3.data; f4.data; f5.data]);
 trainY = double([f1.labels; f2.labels; f3.labels; f4.labels; f5.labels]) + 1; % add 1 to labels!
@@ -52,7 +52,8 @@ end
 
 % run K-means
 centroids = run_kmeans(patches, numCentroids, 50);
-show_centroids(centroids, rfSize); drawnow;
+centroids_image = show_centroids(centroids, rfSize); %drawnow;
+imwrite(centroids_image, strcat(CIFAR_DIR, 'out/', num2str(time(), 10), '.png'));
 
 % extract training features
 if (whitening)
@@ -78,7 +79,7 @@ fprintf('Train accuracy %f%%\n', 100 * (1 - sum(labels ~= trainY) / length(train
 
 %% Load CIFAR test data
 fprintf('Loading test data...\n');
-f1=load([CIFAR_DIR '/test_batch.mat']);
+f1=load([CIFAR_DIR 'test_batch.mat']);
 testX = double(f1.data);
 testY = double(f1.labels) + 1;
 clear f1;

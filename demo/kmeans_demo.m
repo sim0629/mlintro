@@ -68,6 +68,8 @@ testXCs = [testXCs, ones(size(testXCs,1),1)];
 [val,labels] = max(testXCs*theta, [], 2);
 fprintf('Test accuracy %f%%\n', 100 * (1 - sum(labels ~= testY) / length(testY)));
 
+cm = confusion_matrix(testY, labels)
+
 toc;
 
 end

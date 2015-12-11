@@ -1,4 +1,4 @@
-function XC = extract_features(X, centroids, rfSize, CIFAR_DIM, M,P)
+function XC = extract_features_max(X, centroids, rfSize, CIFAR_DIM, M,P)
   assert(nargin == 4 || nargin == 6);
   whitening = (nargin == 6);
   numCentroids = size(centroids,1);
@@ -41,10 +41,10 @@ function XC = extract_features(X, centroids, rfSize, CIFAR_DIM, M,P)
     % pool over quadrants
     halfr = round(prows/2);
     halfc = round(pcols/2);
-    q1 = sum(sum(patches(1:halfr, 1:halfc, :), 1),2);
-    q2 = sum(sum(patches(halfr+1:end, 1:halfc, :), 1),2);
-    q3 = sum(sum(patches(1:halfr, halfc+1:end, :), 1),2);
-    q4 = sum(sum(patches(halfr+1:end, halfc+1:end, :), 1),2);
+    q1 = max(max(patches(1:halfr, 1:halfc, :)),[],2);
+    q2 = max(max(patches(halfr+1:end, 1:halfc, :)),[],2);
+    q3 = max(max(patches(1:halfr, halfc+1:end, :)),[],2);
+    q4 = max(max(patches(halfr+1:end, halfc+1:end, :)),[],2);
     
     % concatenate into feature vector
     XC(i,:) = [q1(:);q2(:);q3(:);q4(:)]';

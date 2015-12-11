@@ -10,7 +10,6 @@ function image = show_centroids(centroids, H, W)
   ROWS=ceil(K / COLS);
   COUNT=COLS * ROWS;
 
-  clf; hold on;
   image=ones(ROWS*(H+1), COLS*(W+1), N)*100;
   for i=1:size(centroids,1)
     r= floor((i-1) / COLS);
@@ -21,4 +20,3 @@ function image = show_centroids(centroids, H, W)
   mn=-1.5;
   mx=+1.5;
   image = (image - mn) / (mx - mn);
-  %imshow(image);

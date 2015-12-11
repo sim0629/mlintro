@@ -1,30 +1,10 @@
+function [] = kmeans_demo(pooling, tag, trainX, trainY, testX, testY, rfSize, numCentroids, numPatches, CIFAR_DIM, CIFAR_DIR)
+SUM_POOLING = 0;
+MAX_POOLING = 1;
 
-CIFAR_DIR='../cifar-10-batches-mat/';
+fprintf('Start [%s]\n', tag);
 
-assert(~strcmp(CIFAR_DIR, '/path/to/cifar/cifar-10-batches-mat/'), ...
-       ['You need to modify kmeans_demo.m so that CIFAR_DIR points to ' ...
-        'your cifar-10-batches-mat directory.  You can download this ' ...
-        'data from:  http://www.cs.toronto.edu/~kriz/cifar-10-matlab.tar.gz']);
-
-%% Configuration
-addpath minFunc;
-rfSize = 6;
-numCentroids=1600;
-whitening=true;
-numPatches = 400000;
-CIFAR_DIM=[32 32 3];
-
-%% Load CIFAR training data
-fprintf('Loading training data...\n');
-f1=load([CIFAR_DIR 'data_batch_1.mat']);
-f2=load([CIFAR_DIR 'data_batch_2.mat']);
-f3=load([CIFAR_DIR 'data_batch_3.mat']);
-f4=load([CIFAR_DIR 'data_batch_4.mat']);
-f5=load([CIFAR_DIR 'data_batch_5.mat']);
-
-trainX = double([f1.data; f2.data; f3.data; f4.data; f5.data]);
-trainY = double([f1.labels; f2.labels; f3.labels; f4.labels; f5.labels]) + 1; % add 1 to labels!
-clear f1 f2 f3 f4 f5;
+tic;
 
 % extract random patches
 patches = zeros(numPatches, rfSize*rfSize*3);
@@ -42,24 +22,22 @@ end
 patches = bsxfun(@rdivide, bsxfun(@minus, patches, mean(patches,2)), sqrt(var(patches,[],2)+10));
 
 % whiten
-if (whitening)
-  C = cov(patches);
-  M = mean(patches);
-  [V,D] = eig(C);
-  P = V * diag(sqrt(1./(diag(D) + 0.1))) * V';
-  patches = bsxfun(@minus, patches, M) * P;
-end
+C = cov(patches);
+M = mean(patches);
+[V,D] = eig(C);
+P = V * diag(sqrt(1./(diag(D) + 0.1))) * V';
+patches = bsxfun(@minus, patches, M) * P;
 
 % run K-means
 centroids = run_kmeans(patches, numCentroids, 50);
-centroids_image = show_centroids(centroids, rfSize); %drawnow;
-imwrite(centroids_image, strcat(CIFAR_DIR, 'out/', num2str(time(), 10), '.png'));
+centroids_image = show_centroids(centroids, rfSize);
+imwrite(centroids_image, strcat(CIFAR_DIR, 'out/', tag, '.png'));
 
 % extract training features
-if (whitening)
-  trainXC = extract_features(trainX, centroids, rfSize, CIFAR_DIM, M,P);
-else
-  trainXC = extract_features(trainX, centroids, rfSize, CIFAR_DIM);
+if (pooling == SUM_POOLING)
+  trainXC = extract_features_sum(trainX, centroids, rfSize, CIFAR_DIM, M,P);
+elseif (pooling == MAX_POOLING)
+  trainXC = extract_features_max(trainX, centroids, rfSize, CIFAR_DIM, M,P);
 end
 
 % standardize data
@@ -77,18 +55,11 @@ fprintf('Train accuracy %f%%\n', 100 * (1 - sum(labels ~= trainY) / length(train
 
 %%%%% TESTING %%%%%
 
-%% Load CIFAR test data
-fprintf('Loading test data...\n');
-f1=load([CIFAR_DIR 'test_batch.mat']);
-testX = double(f1.data);
-testY = double(f1.labels) + 1;
-clear f1;
-
 % compute testing features and standardize
-if (whitening)
-  testXC = extract_features(testX, centroids, rfSize, CIFAR_DIM, M,P);
-else
-  testXC = extract_features(testX, centroids, rfSize, CIFAR_DIM);
+if (pooling == SUM_POOLING)
+  testXC = extract_features_sum(testX, centroids, rfSize, CIFAR_DIM, M,P);
+elseif (pooling == MAX_POOLING)
+  testXC = extract_features_max(testX, centroids, rfSize, CIFAR_DIM, M,P);
 end
 testXCs = bsxfun(@rdivide, bsxfun(@minus, testXC, trainXC_mean), trainXC_sd);
 testXCs = [testXCs, ones(size(testXCs,1),1)];
@@ -97,3 +68,6 @@ testXCs = [testXCs, ones(size(testXCs,1),1)];
 [val,labels] = max(testXCs*theta, [], 2);
 fprintf('Test accuracy %f%%\n', 100 * (1 - sum(labels ~= testY) / length(testY)));
 
+toc;
+
+end

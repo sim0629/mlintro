@@ -1,6 +1,4 @@
-function XC = extract_features_max(X, centroids, rfSize, CIFAR_DIM, M,P)
-  assert(nargin == 4 || nargin == 6);
-  whitening = (nargin == 6);
+function XC = extract_features(X, centroids, rfSize, CIFAR_DIM, M,P,pooling,testing)
   numCentroids = size(centroids,1);
   
   % compute features for all training images
@@ -18,9 +16,7 @@ function XC = extract_features_max(X, centroids, rfSize, CIFAR_DIM, M,P)
     % normalize for contrast
     patches = bsxfun(@rdivide, bsxfun(@minus, patches, mean(patches,2)), sqrt(var(patches,[],2)+10));
     % whiten
-    if (whitening)
-      patches = bsxfun(@minus, patches, M) * P;
-    end
+    patches = bsxfun(@minus, patches, M) * P;
     
     % compute 'triangle' activation function
     xx = sum(patches.^2, 2);
@@ -39,14 +35,31 @@ function XC = extract_features_max(X, centroids, rfSize, CIFAR_DIM, M,P)
     patches = reshape(patches, prows, pcols, numCentroids);
     
     % pool over quadrants
-    halfr = round(prows/2);
-    halfc = round(pcols/2);
-    q1 = max(max(patches(1:halfr, 1:halfc, :)),[],2);
-    q2 = max(max(patches(halfr+1:end, 1:halfc, :)),[],2);
-    q3 = max(max(patches(1:halfr, halfc+1:end, :)),[],2);
-    q4 = max(max(patches(halfr+1:end, halfc+1:end, :)),[],2);
-    
-    % concatenate into feature vector
-    XC(i,:) = [q1(:);q2(:);q3(:);q4(:)]';
+    SUM_POOLING = 0;
+    MAX_POOLING = 1;
+    STOCH_POOLING = 2;
+    STOCHMAX_POOLING = 3;
+    AVG_POOLING = 4;
+    if (pooling == SUM_POOLING)
+      XCi = pooling_sum(patches, prows, pcols);
+    elseif (pooling == MAX_POOLING)
+      XCi = pooling_max(patches, prows, pcols);
+    elseif (pooling == STOCH_POOLING)
+      if (testing)
+        XCi = pooling_stoch_test(patches, prows, pcols);
+      else
+        XCi = pooling_stoch_train(patches, prows, pcols);
+      end
+    elseif (pooling == STOCHMAX_POOLING)
+      if (testing)
+        XCi = pooling_stochmax_test(patches, prows, pcols);
+      else
+        XCi = pooling_stochmax_train(patches, prows, pcols);
+      end
+    elseif (pooling == AVG_POOLING)
+      XCi = pooling_avg(patches, prows, pcols);
+    end
+
+    XC(i,:) = XCi;
   end
 

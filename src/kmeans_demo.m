@@ -1,6 +1,4 @@
 function [] = kmeans_demo(pooling, tag, trainX, trainY, testX, testY, rfSize, numCentroids, numPatches, CIFAR_DIM, CIFAR_DIR)
-SUM_POOLING = 0;
-MAX_POOLING = 1;
 
 fprintf('Start [%s]\n', tag);
 
@@ -34,11 +32,7 @@ centroids_image = show_centroids(centroids, rfSize);
 imwrite(centroids_image, strcat(CIFAR_DIR, 'out/', tag, '.png'));
 
 % extract training features
-if (pooling == SUM_POOLING)
-  trainXC = extract_features_sum(trainX, centroids, rfSize, CIFAR_DIM, M,P);
-elseif (pooling == MAX_POOLING)
-  trainXC = extract_features_max(trainX, centroids, rfSize, CIFAR_DIM, M,P);
-end
+trainXC = extract_features(trainX, centroids, rfSize, CIFAR_DIM, M,P,pooling,false);
 
 % standardize data
 trainXC_mean = mean(trainXC);
@@ -56,11 +50,7 @@ fprintf('Train accuracy %f%%\n', 100 * (1 - sum(labels ~= trainY) / length(train
 %%%%% TESTING %%%%%
 
 % compute testing features and standardize
-if (pooling == SUM_POOLING)
-  testXC = extract_features_sum(testX, centroids, rfSize, CIFAR_DIM, M,P);
-elseif (pooling == MAX_POOLING)
-  testXC = extract_features_max(testX, centroids, rfSize, CIFAR_DIM, M,P);
-end
+testXC = extract_features(testX, centroids, rfSize, CIFAR_DIM, M,P,pooling,true);
 testXCs = bsxfun(@rdivide, bsxfun(@minus, testXC, trainXC_mean), trainXC_sd);
 testXCs = [testXCs, ones(size(testXCs,1),1)];
 

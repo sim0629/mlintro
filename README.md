@@ -1,5 +1,3 @@
-# ML projects
+# ML project 2
 
-See each branch.
-
-DO NOT COPY IT.
+CIFAR-10 image classifier

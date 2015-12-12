@@ -14,6 +14,8 @@
 \usepackage{listings}
 \usepackage{multicol}
 \usepackage{enumitem}
+\usepackage{float}
+\usepackage[skip=5pt]{caption}
 
 \graphicspath{ {images/} }
 
@@ -71,13 +73,13 @@ Coates et al.(2011)의 연구에서는 무감독 학습을 통해 얻은 feature
 
 \section{선행 연구}
 
-선행 연구(Coates et al., 2011)에서 가장 좋은 성능을 낸 이미지 분류기의 구체적인 알고리즘은 다음과 같다.
+선행 연구(ibid.)에서 가장 좋은 성능을 낸 이미지 분류기의 구체적인 알고리즘은 다음과 같다.
 \begin{enumerate}
 \item 랜덤 patch 샘플링
 \item K-means를 이용한 feature extractor 생성
 \item Convolutional feature 추출 (training)
 \item Sum over quadrant pooling (training)
-\item SVM classifier 학습
+\item SVM 분류기 학습
 \item Convolutional feature 추출 (testing)
 \item Sum over quadrant pooling (testing)
 \item 학습한 SVM으로 분류
@@ -91,14 +93,14 @@ Coates et al.(2011)의 연구에서는 무감독 학습을 통해 얻은 feature
 CIFAR-10의 training 데이터는 50000개의 32x32픽셀 컬러(RGB의 3채널) 이미지와 분류 레이블로 구성되어 있다.
 즉,
 \begin{align*}
-    X_{train} &= \{ \mathbf{x}^{(i)} \}_{i=1}^{50000} ( \forall i, \mathbf{x}^{(i)} \in [0, 1]^{32 \times 32 \times 3} ) \\
-    Y_{train} &= \{ y^{(i)} \}_{i=1}^{50000} ( \forall i, y^{(i)} \in \{0, 1, ..., 9\} )
+    X_{train} &= \{ \mathbf{x}^{(i)} \}_{i=1}^{50000} ( \mathbf{x}^{(i)} \in [0, 1]^{32 \times 32 \times 3} ) \\
+    Y_{train} &= \{ y^{(i)} \}_{i=1}^{50000} ( y^{(i)} \in \{0, 1, ..., 9\} )
 \end{align*}
 $X_{train}$에서 무작위로 6x6x3 크기의 patch를 400000개 뽑는다.
 이 때 공평하게 각각의 $\mathbf{x}^{(i)}$에서 8개씩 뽑는다.
 이렇게 하여,
 \begin{align*}
-    P_{sample} &= \{ \mathbf{p}^{(i)} \}_{i=1}^{400000} ( \forall i, \mathbf{p}^{(i)} \in [0, 1]^{6 \times 6 \times 3} )
+    P_{sample} &= \{ \mathbf{p}^{(i)} \}_{i=1}^{400000} ( \mathbf{p}^{(i)} \in [0, 1]^{6 \times 6 \times 3} )
 \end{align*}
 를 얻는다.
 
@@ -107,7 +109,7 @@ $X_{train}$에서 무작위로 6x6x3 크기의 patch를 400000개 뽑는다.
 
 먼저, K-means 알고리즘으로 $P_{sample}$를 $K(=1600)$개의 그룹으로 나누는, 각 그룹의 중심($C$)을 얻는다.
 \begin{align*}
-    C &= \{ \mathbf{c}^{(i)} \}_{i=1}^{1600} ( \forall i, \mathbf{c}^{(i)} \in [0, 1]^{6 \times 6 \times 3} )
+    C &= \{ \mathbf{c}^{(i)} \}_{i=1}^{1600} ( \mathbf{c}^{(i)} \in [0, 1]^{6 \times 6 \times 3} )
 \end{align*}
 $P_{sample}$의 크기가 400000으로 너무 크므로 1000개씩 mini-batch 방식을 사용한다.
 Iteration 횟수는 50회로 고정한다.
@@ -118,7 +120,7 @@ $f$는 다음 단계인 convolutional feature 추출에서 사용할 함수인�
 일단 $\mathbf{f}'$은
 \begin{align*}
     \mathbf{f}' &= (f_{1}', f_{2}', ..., f_{1600}') \\
-    f_{i}'(\mathbf{p}^{*}) &= || \mathbf{p}^{*} - \mathbf{c}^{(i)} ||^2
+    f_{i}'(\mathbf{p}^{*}) &= || \mathbf{p}^{*} - \mathbf{c}^{(i)} ||_2^2
 \end{align*}
 이며, $\mathbf{f}$는 $\mathbf{f}'$의 결과 벡터에서 각 원소의 평균값을 구하고, 평균 이상인 원소는 0으로 평균 이하인 원소는 평균값에서 자신의 값을 뺀 값으로 설정해준 것이다.
 $\mathbf{f}$의 의미를 생각해보면, 중심점 $\mathbf{c}^{(i)}$와 거리가 가까울(작을) 수록 큰 activation을 주기 위해 값에 마이너스를 붙여 뒤집어 주었고, 뒤집은 값에 평균을 더해 평균 거리보다 가까운 중심점에 대한 activation들을 양수로 만들고, 평균 거리보다 먼 중심점에 대해서는 음의 activation을 주는 대신 0을 준 것이다.
@@ -131,21 +133,37 @@ $\mathbf{f}$의 의미를 생각해보면, 중심점 $\mathbf{c}^{(i)}$와 거�
 
 \subsection{Convolutional feature 추출}
 
-Translation invariant한 feature 벡터를 얻기 위해, convolutional feature 추출을 한다.
-
-\end{multicols}
-
-\begin{figure}[!b]
-\includegraphics[width=\textwidth]{feature_extraction}
-\centering
-\caption{전체적인 feature 추출 과정 (Coates et al., 2011)}
-\end{figure}
-
-\begin{multicols}{2}
+Translation-invariant한 feature 벡터를 얻기 위해, convolutional feature 추출을 한다.
+각각의 입력 이미지 $\mathbf{x}^{(i)}$에 대해, receptive field 크기 $w(=6)$, stride $s(=1)$로 patch를 꺼낸다.
+이미지의 크기는 채널을 제외하면 32x32이므로 한 이미지에 대해 27x27개($\because (32-w)/s+1=27$)의 patch가 나온다.
+이렇게 꺼낸 각각의 patch를 $\mathbf{f}$에 통과시키면, 한 이미지 당 $K(=1600)$차원의 벡터가 27x27개 생긴다.
+종합하면, convolutional feature 추출을 통해 32x32x3 크기였던 입력 이미지는 27x27x1600 크기의 이미지 표현으로 확장된다(그림 \ref{fig:feature_extraction} 왼쪽).
 
 \subsection{Sum over quadrant pooling}
 
-\subsection{SVM classification}
+Convolution feature 추출에서 보았듯이 입력 이미지에 비해 이미지 표현의 크기는 훨씬 크다.
+이미지 표현에 pooling을 적용함으로써 weight sharing을 하여 차원을 줄인 feature 벡터를 구한다.
+$K$를 제외하고 생각했을 때, 27x27 크기의 이미지 표현을 사분면으로 나누고(14x14, 14x13, 13x14, 13x13), 각 사분면에 대해 모든 값을 더한다.
+이것을 $K$개의 feature에 대해 각각 적용하면, 최종적으로 $4K(=6400)$차원의 feature 벡터가 얻어진다(그림 \ref{fig:feature_extraction} 오른쪽).
+
+\begin{figure}[H]
+\includegraphics[width=\linewidth]{feature_extraction}
+\caption{Feature 벡터 추출 과정 (Coates et al., 2011)}
+\label{fig:feature_extraction}
+\end{figure}
+
+Feature 추출에 관련된 모든 작업을 다음과 같이 하나의 함수 $\Phi$로 표현해볼 수 있다.
+\begin{align*}
+    \Phi &\colon X \to [0, 1]^{6400} \\
+    \Phi(\mathbf{x}) &= (\text{feature vector})
+\end{align*}
+
+\subsection{SVM 분류기}
+
+$\Phi(X_{train})$을 입력으로 하고, $Y_{train}$을 출력으로 하여, SVM(L2) 분류기를 학습 시킨다.
+이 학습한 분류기를 가지고 $\Phi(X_{test})$를 분류하게 된다.
+본 실험에서는 선행 연구에서 구현한 SVM을 그대로 사용하였다.
+SVM 자체에 대한 설명은 생략한다.
 
 \section{추가 구현}
 
@@ -185,6 +203,10 @@ imwrite?
 \section{결론}
 
 triangle k-means는 activation에 ReLU를 적용한 것과 사실상 같음
+
+의의
+오차 분석
+misleading 지적
 
 \section*{참고 문헌}
 

@@ -58,16 +58,49 @@ Coates et al.(2011)의 연구에서는 무감독 학습을 통해 얻은 feature
 마지막으로, 선행 연구에서는 분류 정확도를에 대한 오차 범위가 드러나 있지 않다.
 다양한 soft K-means 알고리즘과 pooling 방식에 대한 비교를 더욱 정밀히 하기 위해, 여러번 실험하여 오차 범위까지 산출하여 분석 해보기로 하였다.
 
-앞으로 본 보고서에서는 구현의 명확성을 위해 선행 연구의 방법을 더 자세히 설명하고, 실험을 위해 추가로 구현한 사항을 명시한 뒤, 실험 결과를 분석하였다.
+앞으로 본 보고서에서는 구현의 명확성을 위해 선행 연구의 방법을 더 자세히 설명하고, 본 실험을 위해 추가로 구현한 사항을 명시한 뒤, 실험 결과를 분석하였다.
 
 \section{선행 연구}
 
-선행 연구에서 가장 좋은 성능을 낸 이미지 분류기의 구체적인 구현은 다음과 같다.
-
+선행 연구(Coates et al., 2011)에서 가장 좋은 성능을 낸 이미지 분류기의 구체적인 알고리즘은 다음과 같다.
 \begin{enumerate}
+\item 랜덤 patch 샘플링
+\item K-means 알고리즘을 통한 feature extractor 생성
+\item Convolutional feature 추출 (training 데이터)
+\item Summation over quadrant pooling (training 데이터)
+\item SVM classifier 학습
+\item Convolutional feature 추출 (testing 데이터)
+\item Summation over quadrant pooling (testing 데이터)
+\item 학습한 SVM으로 분류
 \end{enumerate}
+전체는 크게 학습 단계(1-5)와 분류 단계(6-8)로 나뉜다.
+이 중 convolutional feature 추출과, pooling은 training 데이터와 testing 데이터 모두에게 공통적으로 적용된다.
+각 세부 단계의 구체적인 구현은 다음과 같다.
 
-\subsection{?}
+\subsection{랜덤 patch 샘플링}
+
+CIFAR-10의 training 데이터는 50000개의 32x32픽셀 컬러(RGB의 3채널) 이미지와 분류 레이블로 구성되어 있다.
+즉,
+\begin{align*}
+    X_{train} &= \{ \mathbf{x}^{(i)} \}_{i=1}^{50000} ( \forall i, \mathbf{x}^{(i)} \in [0, 1]^{32 \times 32 \times 3} ) \\
+    Y_{train} &= \{ y^{(i)} \}_{i=1}^{50000} ( \forall i, y^{(i)} \in \{0, 1, ..., 9\} )
+\end{align*}
+$X_{train}$에서 무작위로 6x6x3 크기의 patch를 400000개 뽑는다.
+이 때 공평하게 각각의 $\mathbf{x}^{(i)}$에서 8개씩 뽑는다.
+이렇게 하여,
+\begin{align*}
+    P_{sample} &= \{ \mathbf{p}^{(i)} \}_{i=1}^{400000} ( \forall i, \mathbf{p}^{(i)} \in [0, 1]^{6 \times 6 \times 3} )
+\end{align*}
+를 얻는다.
+
+\subsection{Feature extractor 생성}
+
+\subsection{Convolutional feature 추출}
+
+\subsection{Summation over quadrant pooling}
+
+\subsection{SVM classification}
+
 
 \section{추가 구현}
 

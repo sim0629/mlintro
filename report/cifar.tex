@@ -1,4 +1,4 @@
-\documentclass[a4paper,10pt]{article}
+\documentclass[a4paper,9pt]{article}
 
 \usepackage{kotex}
 \usepackage{datetime}
@@ -12,6 +12,8 @@
 \usepackage{hyperref}
 \usepackage{enumerate}
 \usepackage{listings}
+\usepackage{multicol}
+\usepackage{enumitem}
 
 \graphicspath{ {images/} }
 
@@ -24,17 +26,20 @@
 %\renewcommand{\listfigurename}{그림 목차}
 %\renewcommand{\listtablename}{표 목차}
 
-\linespread{1.5}
+\linespread{1.3}
+\pagenumbering{arabic}
+\setlength\columnsep{20pt}
+\setlist[enumerate]{itemsep=0mm}
 
 \begin{document}
+
 \title{선행 연구(Coates et al., 2011)에 기초한 \\
 CIFAR-10 이미지 분류기 구현 및 실험}
 \author{기계학습개론 기말 프로젝트 보고서 \\
 컴퓨터공학부 2009-11744 심규민}
 \date{\koreandate\today}
-\maketitle
 
-\pagenumbering{arabic}
+\maketitle
 
 \begin{abstract}
 (TODO)
@@ -43,6 +48,10 @@ CIFAR-10 이미지 분류기 구현 및 실험}
 \tableofcontents
 %\listoffigures
 %\listoftables
+
+\pagebreak
+
+\begin{multicols}{2}
 
 \section{서론}
 
@@ -53,7 +62,7 @@ Coates et al.(2011)의 연구에서는 무감독 학습을 통해 얻은 feature
 그러나 실은 가장 기본적인 K-means(hard) 알고리즘을 사용한 것이 아니라 triangle activation을 더한 K-means(triangle) 알고리즘을 사용하였다.
 성능(분류 정확도)에 있어서도 K-means(hard) 알고리즘을 사용했을 때에는 다른 알고리즘들을 사용했을 때 보다 낮은 성능을 보였으며, K-means(triangle) 알고리즘을 사용했을 때 비로소 가장 좋은 성능을 내었다.
 이 사실에 주목하여 soft한 특성을 갖도록 다양하게 변형한 K-means 알고리즘들에 대해서도 실험 해보기로 하였다.
-또한, 선행 연구에서는 convolutional feature extraction에 사용한 receptive field 크기, stride, feature 개수, whitening 여부 등의 하이퍼 파라미터들은 다양하게 바꿔보며 실험한 데에 반해서, pooling 방식은 summation만을 사용하였다.
+또한, 선행 연구에서는 convolutional feature extraction에 사용한 receptive field 크기, stride, feature 개수, whitening 여부 등의 하이퍼 파라미터들은 다양하게 바꿔보며 실험한 데에 반해서, pooling 방식은 sum만을 사용하였다.
 이 사실에 의문을 갖고 average pooling, maximum pooling, stochastic pooling(Zeiler et al., 2013), stochastic max-pooling(Huang et al., 2015) 등의 다양한 pooling 방식에 대해서도 실험 해보기로 하였다.
 마지막으로, 선행 연구에서는 분류 정확도를에 대한 오차 범위가 드러나 있지 않다.
 다양한 soft K-means 알고리즘과 pooling 방식에 대한 비교를 더욱 정밀히 하기 위해, 여러번 실험하여 오차 범위까지 산출하여 분석 해보기로 하였다.
@@ -65,12 +74,12 @@ Coates et al.(2011)의 연구에서는 무감독 학습을 통해 얻은 feature
 선행 연구(Coates et al., 2011)에서 가장 좋은 성능을 낸 이미지 분류기의 구체적인 알고리즘은 다음과 같다.
 \begin{enumerate}
 \item 랜덤 patch 샘플링
-\item K-means 알고리즘을 통한 feature extractor 생성
-\item Convolutional feature 추출 (training 데이터)
-\item Summation over quadrant pooling (training 데이터)
+\item K-means를 이용한 feature extractor 생성
+\item Convolutional feature 추출 (training)
+\item Sum over quadrant pooling (training)
 \item SVM classifier 학습
-\item Convolutional feature 추출 (testing 데이터)
-\item Summation over quadrant pooling (testing 데이터)
+\item Convolutional feature 추출 (testing)
+\item Sum over quadrant pooling (testing)
 \item 학습한 SVM으로 분류
 \end{enumerate}
 전체는 크게 학습 단계(1-5)와 분류 단계(6-8)로 나뉜다.
@@ -122,7 +131,19 @@ $\mathbf{f}$의 의미를 생각해보면, 중심점 $\mathbf{c}^{(i)}$와 거�
 
 \subsection{Convolutional feature 추출}
 
-\subsection{Summation over quadrant pooling}
+Translation invariant한 feature 벡터를 얻기 위해, convolutional feature 추출을 한다.
+
+\end{multicols}
+
+\begin{figure}[!b]
+\includegraphics[width=\textwidth]{feature_extraction}
+\centering
+\caption{전체적인 feature 추출 과정 (Coates et al., 2011)}
+\end{figure}
+
+\begin{multicols}{2}
+
+\subsection{Sum over quadrant pooling}
 
 \subsection{SVM classification}
 
@@ -131,7 +152,7 @@ $\mathbf{f}$의 의미를 생각해보면, 중심점 $\mathbf{c}^{(i)}$와 거�
 본 실험을 위해, 일단 Coates의 웹페이지에서 데모 코드를 얻었다.
 MATLAB으로 작성되어 있었으며, 여기에 코드를 추가하여 실험하였다.
 
-\subsection{여러 soft K-means 알고리즘}
+\subsection{여러 soft한 K-means 알고리즘}
 
 \ref{sec:feature_extractor}절을 주의 깊게 보면, 선행 연구에서 주목 할만한 점이 있다.
 선행 연구 논문에서는 가장 가까운 중심점에 대한 activation만 1로 한 것을 K-means(hard)로, $\mathbf{f}$ 처럼 평균 이하를 버려서 activation을 바꿔준 것을 K-means(triangle)로 표기 하였다.
@@ -142,6 +163,11 @@ MATLAB으로 작성되어 있었으며, 여기에 코드를 추가하여 실험�
 다시 말하면, K-means(triangle)은 soft한 K-means 알고리즘이 아니다.
 본 연구에서는 데모 코드를 보고 나서야, 이 부분을 misleading 했다고 알게 되었다.
 결국 여러 soft한 K-means 알고리즘을 구현하여 비교하려던 초기 계획은 더이상 유효하지 않게 되었고, 따라서 진행할 수 없었다.
+
+GMM을 봤을 때에도 성능이 좋지 않았다.
+클러스터링 알고리즘 보다는 activation을 어떻게 구하는지가 중요
+이건 pooling의 일부로도 볼 수 있다
+(TODO)
 
 \subsection{여러 pooling 방식}
 
@@ -167,5 +193,7 @@ triangle k-means는 activation에 ReLU를 적용한 것과 사실상 같음
 \item Huang, Y., Sun, X., Lu, M., \& Xu, M. (2015). Channel-Max, Channel-Drop and Stochastic Max-Pooling. In \textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition Workshops}.
 \item Zeiler, M. D., \& Fergus, R. (2013). Stochastic pooling for regularization of deep convolutional neural networks. \textit{arXiv preprint arXiv:1301.3557}.
 \end{itemize}
+
+\end{multicols}
 
 \end{document}

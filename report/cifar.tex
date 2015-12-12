@@ -94,6 +94,31 @@ $X_{train}$에서 무작위로 6x6x3 크기의 patch를 400000개 뽑는다.
 를 얻는다.
 
 \subsection{Feature extractor 생성}
+\label{sec:feature_extractor}
+
+먼저, K-means 알고리즘으로 $P_{sample}$를 $K(=1600)$개의 그룹으로 나누는, 각 그룹의 중심($C$)을 얻는다.
+\begin{align*}
+    C &= \{ \mathbf{c}^{(i)} \}_{i=1}^{1600} ( \forall i, \mathbf{c}^{(i)} \in [0, 1]^{6 \times 6 \times 3} )
+\end{align*}
+$P_{sample}$의 크기가 400000으로 너무 크므로 1000개씩 mini-batch 방식을 사용한다.
+Iteration 횟수는 50회로 고정한다.
+K-means 알고리즘 자체에 대한 설명은 trivial 하므로 생략한다.
+
+다음으로, $C$를 이용하여 feature extractor $\mathbf{f}$를 만든다.
+$f$는 다음 단계인 convolutional feature 추출에서 사용할 함수인데, $\mathbf{x}^{(i)}$에서 잘라낸 6x6x3 크기의 어떤 patch $\mathbf{p}^{*}$를 $\mathbf{c}^{(i)}$들과의 거리(유클리드 거리의 제곱)로 이루어진 $K$차원의 벡터로 변형하는 함수 $\mathbf{f}'$을 변형해서 만든다.
+일단 $\mathbf{f}'$은
+\begin{align*}
+    \mathbf{f}' &= (f_{1}', f_{2}', ..., f_{1600}') \\
+    f_{i}'(\mathbf{p}^{*}) &= || \mathbf{p}^{*} - \mathbf{c}^{(i)} ||^2
+\end{align*}
+이며, $\mathbf{f}$는 $\mathbf{f}'$의 결과 벡터에서 각 원소의 평균값을 구하고, 평균 이상인 원소는 0으로 평균 이하인 원소는 평균값에서 자신의 값을 뺀 값으로 설정해준 것이다.
+$\mathbf{f}$의 의미를 생각해보면, 중심점 $\mathbf{c}^{(i)}$와 거리가 가까울(작을) 수록 큰 activation을 주기 위해 값에 마이너스를 붙여 뒤집어 주었고, 뒤집은 값에 평균을 더해 평균 거리보다 가까운 중심점에 대한 activation들을 양수로 만들고, 평균 거리보다 먼 중심점에 대해서는 음의 activation을 주는 대신 0을 준 것이다.
+즉,
+\begin{align*}
+    \mathbf{f} &= (f_{1}, f_{2}, ..., f_{1600}) \\
+    f_{i}(\mathbf{p}^{*}) &= \text{max} ( 0, \text{avg} (\mathbf{f}'(\mathbf{p}^{*})) - f_{i}'(\mathbf{p}^{*}) )
+\end{align*}
+와 같다.
 
 \subsection{Convolutional feature 추출}
 
@@ -101,8 +126,33 @@ $X_{train}$에서 무작위로 6x6x3 크기의 patch를 400000개 뽑는다.
 
 \subsection{SVM classification}
 
-
 \section{추가 구현}
+
+본 실험을 위해, 일단 Coates의 웹페이지에서 데모 코드를 얻었다.
+MATLAB으로 작성되어 있었으며, 여기에 코드를 추가하여 실험하였다.
+
+\subsection{여러 soft K-means 알고리즘}
+
+\ref{sec:feature_extractor}절을 주의 깊게 보면, 선행 연구에서 주목 할만한 점이 있다.
+선행 연구 논문에서는 가장 가까운 중심점에 대한 activation만 1로 한 것을 K-means(hard)로, $\mathbf{f}$ 처럼 평균 이하를 버려서 activation을 바꿔준 것을 K-means(triangle)로 표기 하였다.
+그리고 여러가지 무감독 학습(Auto-encoder, GMM 등) 중에 하나로 K-means(hard)와 K-means(triangle)을 구별하여 소개하였다.
+그러나 이 부분은 misleading을 유발한다.
+사실은 두 K-means 알고리즘이 중심점을 구하는 과정까지는 완벽히 동일함을 알 수 있다.
+(E-M 알고리즘에서 responsibility를 1-of-N 대신 softmax 등의 확률을 사용하여 iteration을 도는) Soft K-means 알고리즘을 K-means(triangle) 알고리즘과 비교해볼 때 확연히 다르다.
+다시 말하면, K-means(triangle)은 soft한 K-means 알고리즘이 아니다.
+본 연구에서는 데모 코드를 보고 나서야, 이 부분을 misleading 했다고 알게 되었다.
+결국 여러 soft한 K-means 알고리즘을 구현하여 비교하려던 초기 계획은 더이상 유효하지 않게 되었고, 따라서 진행할 수 없었다.
+
+\subsection{여러 pooling 방식}
+
+(TODO)
+
+\subsection{기타 구현}
+
+오차 분석
+confusion matrix
+imwrite?
+(TODO)
 
 \section{실험 결과}
 

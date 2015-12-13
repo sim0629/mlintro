@@ -283,9 +283,24 @@ STOCHMAX 방식을 MAX 방식과 비교해보면 testing 정확도의 신뢰구�
 
 \subsection{Confusion matrix}
 
-confusion matrix
-층이 더 필요함
-(TODO)
+\begin{figure}[H]
+\includegraphics[width=\linewidth]{confusion_matrix}
+\caption{분류 결과 Confusion Matrix 중 하나}
+\label{fig:confusion_matrix}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=\linewidth]{feature}
+\caption{학습한 Feature 중 일부}
+\label{fig:feature}
+\end{figure}
+
+SUM pooling 방식을 사용하여 가장 좋은 성능($77.88$\%)이 나온 결과에 대해 confusion matrix를 그려 보았다(그림 \ref{fig:confusion_matrix}).
+(4, 4)와 (6, 6)이 흐리게 나온 것을 봤을 때 클래스 4와 6이 서로 헷갈리기 쉬움을 알 수 있었다.
+클래스 4와 6은 각각 고양이와 개이다.
+고양이와 개는 단순한 외형이 많이 닮아 있다.
+본 실험에서는 convolution과 pooling을 한 번만 하여 단일 층 분류기를 구현했기 때문에 feature(6x6x3)들의 모습이 기껏해야 점이나 직선 정도의 복잡도를 가질 수 있다(그림 \ref{fig:feature}).
+학습 층을 더 늘려서 곡선이나 원과 같은 복잡한 모양의 feature를 가질 수 있게 해야 고양이와 개를 더 정확히 구분할 수 있을 것이다.
 
 \subsection{수행 시간 비교}
 

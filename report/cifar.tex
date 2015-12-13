@@ -26,8 +26,6 @@
 \renewcommand{\figurename}{그림}
 \renewcommand{\tablename}{표}
 \renewcommand{\contentsname}{목차}
-%\renewcommand{\listfigurename}{그림 목차}
-%\renewcommand{\listtablename}{표 목차}
 
 \linespread{1.3}
 \pagenumbering{arabic}
@@ -50,8 +48,6 @@ CIFAR-10 이미지 분류기 구현 및 실험}
 \end{abstract}
 
 \tableofcontents
-%\listoffigures
-%\listoftables
 
 \pagebreak
 
@@ -66,14 +62,16 @@ Coates et al.(2011)의 연구에서는 무감독 학습을 통해 얻은 feature
 그러나 실은 가장 기본적인 K-means(hard) 알고리즘을 사용한 것이 아니라 triangle activation을 더한 K-means(triangle) 알고리즘을 사용하였다.
 성능(분류 정확도)에 있어서도 K-means(hard) 알고리즘을 사용했을 때에는 다른 알고리즘들을 사용했을 때 보다 낮은 성능을 보였으며, K-means(triangle) 알고리즘을 사용했을 때 비로소 가장 좋은 성능을 내었다.
 이 사실에 주목하여 soft한 특성을 갖도록 다양하게 변형한 K-means 알고리즘들에 대해서도 실험 해보기로 하였다.
-또한, 선행 연구에서는 convolutional feature extraction에 사용한 receptive field 크기, stride, feature 개수, whitening 여부 등의 하이퍼 파라미터들은 다양하게 바꿔보며 실험한 데에 반해서, pooling 방식은 sum만을 사용하였다.
+
+또한, 선행 연구에서는 convolutional feature 추출에 사용한 receptive field 크기, stride, feature 개수, whitening 여부 등의 하이퍼 파라미터들은 다양하게 바꿔보며 실험한 데에 반해서, pooling 방식은 sum만을 사용하였다.
 이 사실에 의문을 갖고 average pooling, max pooling, stochastic pooling(Zeiler et al., 2013), stochastic max-pooling(Huang et al., 2015) 등의 다양한 pooling 방식에 대해서도 실험 해보기로 하였다.
-마지막으로, 선행 연구에서는 분류 정확도를에 대한 오차 범위가 드러나 있지 않다.
-다양한 soft K-means 알고리즘과 pooling 방식에 대한 비교를 더욱 정밀히 하기 위해, 여러번 실험하여 정확도의 신뢰구간까지 산출하여 분석 해보기로 하였다.
 
-앞으로 본 보고서에서는 구현의 명확성을 위해 선행 연구의 방법을 더 자세히 설명하고, 본 실험을 위해 추가로 구현한 사항을 명시한 뒤, 실험 결과를 분석하였다.
+마지막으로, 선행 연구에서는 분류 정확도에 대한 오차 범위가 드러나 있지 않다.
+선행 연구를 검증하고, 다양한 soft K-means 알고리즘과 pooling 방식에 대한 비교를 더욱 정밀히 하기 위해, 여러번 실험하여 정확도의 신뢰구간까지 산출하여 분석 해보기로 하였다.
 
-\section{선행 연구}
+앞으로 본 보고서에서는 구현의 명확성을 위해 선행 연구의 방법을 더 자세히 설명하고, 본 실험을 위해 추가로 구현한 사항을 명시한 뒤, 실험 결과를 분석하여 결론을 낼 것이다.
+
+\section{선행 연구의 알고리즘}
 
 선행 연구(ibid.)에서 가장 좋은 성능을 낸 이미지 분류기의 구체적인 알고리즘은 다음과 같다.
 \begin{enumerate}
@@ -161,20 +159,21 @@ Feature 추출에 관련된 모든 작업을 다음과 같이 하나의 함수 $
     \Phi(\mathbf{x}) &= (\text{feature vector})
 \end{align*}
 
-\subsection{SVM 분류기}
+\subsection{SVM 학습 및 분류}
 
 $\Phi(X_{train})$을 입력으로 하고, $Y_{train}$을 출력으로 하여, SVM(L2) 분류기를 학습 시킨다.
 이 학습한 분류기를 가지고 $\Phi(X_{test})$를 분류하게 된다.
+(참고로 test 입력 이미지는 10000개로 구성되어 있다.)
 본 실험에서는 선행 연구에서 구현한 SVM을 그대로 사용하였다.
 SVM 자체에 대한 설명은 생략한다.
 
-\section{추가 구현}
+\section{추가 구현 사항}
 
 본 실험을 위해, 일단 Coates의 웹페이지에서 MATLAB으로 작성된 데모 코드를 얻었다.
 데모 코드에는 앞 절에서 설명한 사항 외에 whitening 등 patch에 대한 normalization과 feature 벡터에 대한 standardization이 포함되어 있다.
 여기에 코드를 추가하여 실험하였다.
 
-\subsection{여러 soft한 K-means 알고리즘}
+\subsection{K-means(triangle)의 실체}
 
 \ref{sec:feature_extractor}절을 주의 깊게 보면, 선행 연구에서 주목 할만한 점이 있다.
 선행 연구 논문에서는 가장 가까운 중심점에 대한 activation만 1로 한 것을 K-means(hard)로, $\mathbf{f}$ 처럼 평균 이하를 버려서 activation을 바꿔준 것을 K-means(triangle)로 표기 하였다.
@@ -237,7 +236,7 @@ Testing 할 때에는, region에서 큰 activation부터 차례로 1/2, 1/4, 1/8
 또한 testing 결과에 대한 \textbf{confusion matrix}를 출력하도록 하였다.
 사소하지만 $imshow$로 되어 있던 구현을 $imwrite$로 변경하여 GUI 없이 실행 가능하게 하였으며, 실행 시간도 측정하였다.
 
-\section{실험 결과}
+\section{실험 결과 및 분석}
 
 \subsection{Pooling에 따른 정확도 비교}
 
@@ -289,18 +288,18 @@ STOCHMAX 방식을 MAX 방식과 비교해보면 testing 정확도의 신뢰구�
 \label{fig:confusion_matrix}
 \end{figure}
 
-\begin{figure}[H]
-\includegraphics[width=\linewidth]{feature}
-\caption{학습한 Feature 중 일부}
-\label{fig:feature}
-\end{figure}
-
 SUM pooling 방식을 사용하여 가장 좋은 성능($77.88$\%)이 나온 결과에 대해 confusion matrix를 그려 보았다(그림 \ref{fig:confusion_matrix}).
-(4, 4)와 (6, 6)이 흐리게 나온 것을 봤을 때 클래스 4와 6이 서로 헷갈리기 쉬움을 알 수 있었다.
+(4, 4)와 (6, 6)에 샘플이 적고, (4, 6)과 (6, 4)에 샘플이 많은 것을 봤을 때 클래스 4와 6이 서로 헷갈리기 쉬움을 알 수 있었다.
 클래스 4와 6은 각각 고양이와 개이다.
 고양이와 개는 단순한 외형이 많이 닮아 있다.
 본 실험에서는 convolution과 pooling을 한 번만 하여 단일 층 분류기를 구현했기 때문에 feature(6x6x3)들의 모습이 기껏해야 점이나 직선 정도의 복잡도를 가질 수 있다(그림 \ref{fig:feature}).
 학습 층을 더 늘려서 곡선이나 원과 같은 복잡한 모양의 feature를 가질 수 있게 해야 고양이와 개를 더 정확히 구분할 수 있을 것이다.
+
+\begin{figure}[H]
+\centerline{\includegraphics[width=0.8\linewidth]{feature}}
+\caption{학습한 Feature 중 일부}
+\label{fig:feature}
+\end{figure}
 
 \subsection{수행 시간 비교}
 
@@ -326,21 +325,31 @@ SUM 방식은 MAX, AVG 방식과 비슷한 속도임에도 불구하고 가장 �
 
 \section{결론}
 
-각 pooling이 overfitting을 하는지 보고 논문의 결과에 대한 오차 분석을 하는 것이 목적
-cross validation은 하지 않았다.
-하이퍼 파라미터 때문인듯?
-triangle k-means는 activation에 ReLU를 적용한 것과 사실상 같음
+본 실험에서는 선행 연구(Coates et al., 2011)에서 가장 좋은 성능을 낸 CIFAR-10 이미지 분류기의 구현 중, K-means(triangle) 알고리즘의 놀라운 성능 향상 효과와 단일화 된 pooling 방식에 주목하여, 이 두 부분을 수정하여 다양한 실험을 해보았다.
+그러던 중, K-means(triangle) 알고리즘의 실체가 K-means(hard) 알고리즘과 클러스터링 방식은 완전히 동일하고 feature 벡터를 구하기 위한 activation 값을 처리하는 방식만 다르다는 점을 알게 되었다.
+더 자세히 말하면, 평균값에서 각 activation을 빼서 0 이하 값을 버리는, 마치 pooling을 하기 전처리로 ReLU를 사용하는 방식과 닮아 있다.
+선행 연구 논문이 유발한 misleading 때문에 soft한 K-means 알고리즘 여럿을 비교하려던 계획은 시도하지 못했다.
+따라서 다양한 pooling 방식에 대한 비교 실험만을 진행하였고, 선행 연구에서 사용한 sum pooling 보다 좋은 성능을 내는 데에는 실패하였다.
+선행 연구에서 사용한 모델과 cross validation을 통해 구한 하이퍼 파라미터를 그대로 사용했기 때문일 것이다.
+추가적으로 confusion matrix를 계산해보았고, 가장 많이 틀리는 클래스는 고양이와 개라는 것을 알 수 있었다.
+단일 층 분류기로는 외형이 비슷한 object를 잘 구분하지 못하는 한계가 있는 것이다.
 
-의의
-오차 분석
-표본이 적긴 하지만 선행 논문이 사기
-misleading 지적
+아쉽게도 성능 향상을 달성하지 못했지만, misleading 할 수 있는 부분을 지적한 것과 오차 분석을 한 것에서 본 실험의 의의를 찾을 수 있다.
+우선, 선행 연구(ibid.) 논문에서는 무감독 학습 방식을 K-means(triangle)로 한 것이 놀라운 성능을 냈다고 썼지만, 사실은 activation의 처리 방식이 다른 것이다.
+다음에 선행 연구 논문을 읽는 사람이 있다면 이 부분을 반드시 알고 넘어가야 좋을 것이다.
+다음으로, 오차 분석을 통해 신뢰구간을 구해본 결과 선행 연구에서 달성 했다는 성능은 수 번 수행해서는 내기 힘든 수준(99\% 신뢰구간의 상한 보다 높음)이라는 것을 알 수 있었다.
+
 
 \section*{참고 문헌}
 
 \begin{itemize}
 \item Coates, A., Ng, A. Y., \& Lee, H. (2011). An analysis of single-layer networks in unsupervised feature learning. In \textit{International conference on artificial intelligence and statistics}.
+\item Han, C. (2015). \textit{기말 프로젝트}. 서울대학교 컴퓨터공학부 기계학습 개론 수업 ppt.
 \item Huang, Y., Sun, X., Lu, M., \& Xu, M. (2015). Channel-Max, Channel-Drop and Stochastic Max-Pooling. In \textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition Workshops}.
+\item Sim, G. (2015). \textit{기존 연구에 기초한, CIFAR-10 이미지 분류기 구현 및 실험 (계획)}. 서울대학교 컴퓨터공학부 기계학습 개론 수업 poster.
+\item Stephanie (2009, October 7). \textit{Construct a Confidence Interval with a T-distribution}. Retrieved from http://www.statisticshowto.com/how-to-construct-a-confidence-interval-from-data-using-the-t-distribution/
+\item @vaaaaanquish (2015, January 26). \textit{Deep Learning and Convolutional Neural Network}. Retrieved from http://vaaaaaanquish.hatenablog.com/entry/ 2015/01/26/060622
+\item Zhang, B. (2015, August). 딥하이퍼넷 모델. \textit{정보과학회지}.
 \item Zeiler, M. D., \& Fergus, R. (2013). Stochastic pooling for regularization of deep convolutional neural networks. \textit{arXiv preprint arXiv:1301.3557}.
 \end{itemize}
 
@@ -351,10 +360,6 @@ misleading 지적
 \section*{부록}
 
 \subsection*{실험 결과 표}
-
-(TODO)
-
-\subsection*{K-means 중심점}
 
 (TODO)
 

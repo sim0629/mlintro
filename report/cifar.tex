@@ -304,7 +304,25 @@ SUM pooling 방식을 사용하여 가장 좋은 성능($77.88$\%)이 나온 결
 
 \subsection{수행 시간 비교}
 
-(TODO)
+오차 분석을 위해 반복 수행을 할 때 pooling 방식 별로 서로 다른 성능의 컴퓨터를 사용하였다.
+더 정확히 말하면, SUM 방식과 MAX 방식은 Intel Core i5를 사용해서 실험했고, 나머지 방식은 Intel Core i7-4790을 사용해서 실험하였다.
+모두 메모리는 DDR3 8GB를 사용했다.
+수행 시간을 공평하게 비교하기 위해, 후자 환경에서 SUM 방식과 MAX 방식을 1회 더 수행해보았다.
+수행 시간은 학습과 분류를 하는 시간을 합했다.
+
+실험 결과 MAX, AVG 방식이 41분으로 가장 빨랐고, 이어서 SUM(43분), STOCHMAX(56분), STOCH(62분) 순서였다(표 \ref{tbl:running_time}).
+이 중에 SUM과 MAX 방식에 대한 시간은 1회 수행한 값이고, 나머지는 10회 수행한 평균이다.
+SUM 방식은 MAX, AVG 방식과 비슷한 속도임에도 불구하고 가장 좋은 성능을 낸다는 점에 주목할만 하다.
+
+\begin{table}[H]
+\centerline{\begin{tabular}{l|rrrrr}
+방식 & SUM & AVG & MAX & S.MAX & STO. \\
+\hline
+시간 & 43 & 41 & 41 & 56 & 62
+\end{tabular}}
+\caption{Pooling 방식에 따른 수행 시간(분)}
+\label{tbl:running_time}
+\end{table}
 
 \section{결론}
 

@@ -68,7 +68,7 @@ Coates et al.(2011)의 연구에서는 무감독 학습을 통해 얻은 feature
 또한, 선행 연구에서는 convolutional feature extraction에 사용한 receptive field 크기, stride, feature 개수, whitening 여부 등의 하이퍼 파라미터들은 다양하게 바꿔보며 실험한 데에 반해서, pooling 방식은 sum만을 사용하였다.
 이 사실에 의문을 갖고 average pooling, max pooling, stochastic pooling(Zeiler et al., 2013), stochastic max-pooling(Huang et al., 2015) 등의 다양한 pooling 방식에 대해서도 실험 해보기로 하였다.
 마지막으로, 선행 연구에서는 분류 정확도를에 대한 오차 범위가 드러나 있지 않다.
-다양한 soft K-means 알고리즘과 pooling 방식에 대한 비교를 더욱 정밀히 하기 위해, 여러번 실험하여 오차 범위까지 산출하여 분석 해보기로 하였다.
+다양한 soft K-means 알고리즘과 pooling 방식에 대한 비교를 더욱 정밀히 하기 위해, 여러번 실험하여 정확도의 신뢰구간까지 산출하여 분석 해보기로 하였다.
 
 앞으로 본 보고서에서는 구현의 명확성을 위해 선행 연구의 방법을 더 자세히 설명하고, 본 실험을 위해 추가로 구현한 사항을 명시한 뒤, 실험 결과를 분석하였다.
 
@@ -231,10 +231,10 @@ Testing 할 때에는, region에서 큰 activation부터 차례로 1/2, 1/4, 1/8
 
 \subsection{기타 구현}
 
-오차 분석
-confusion matrix
-imwrite?
-(TODO)
+선행 연구(Coates et al., 2011)에서는 CIFAR-10 데이터에 대한 분류 정확도에 \textbf{오차}가 나타나 있지 않다.
+이 연구 결과를 검증하기 위해 SUM을 포함한 모든 pooling 방식에 대해 학습과 분류 전 과정을 \textbf{10번씩} 반복 실행하였다.
+또한 testing 결과에 대한 \textbf{confusion matrix}를 출력하도록 하였다.
+사소하지만 $imshow$로 되어 있던 구현을 $imwrite$로 변경하여 GUI 없이 실행 가능하게 하였으며, 실행 시간도 측정하였다.
 
 \section{실험 결과}
 

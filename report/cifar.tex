@@ -192,26 +192,42 @@ Actication을 어떻게 계산하고 처리할 것인지는 pooling 단계의 �
 
 \subsection{여러 pooling 방식}
 
-\ref{sec:quadrant_pooling}절에서 사분면에 대한 sum pooling에 대해 설명하였다.
+\ref{sec:quadrant_pooling}절에서 사분면에 대한 sum pooling (SUM)에 대해 설명하였다.
 이 외에 average pooling (AVG), max pooling (MAX), stochastic pooling (STOCH), stochastic max pooling (STOCHMAX)을 구현하였다.
 이들도 마찬가지로 사분면에 대해 pooling 하도록 하였다.
 부록에 MATLAB 구현을 첨부하였다.
 
-\subsubsection{Average pooling}
+\subsubsection{Average pooling (AVG)}
 
 각 사분면에 대해 평균값을 구한다.
 각 사분면의 크기가 13x13, 14x14 등으로 서로 달라서 feature 벡터를 standardization 하더라도 sum pooling과 결과가 다르다.
-Training 할 때와 testing 할 때 같은 pooling 방식을 사용한다.
+이렇게 하면 사분면 마다 standardization을 하는 효과가 있다.
+Training 할 때와 testing 할 때 모두 같은 pooling 방식을 사용한다.
 
-\subsubsection{Max pooling}
+\subsubsection{Max pooling (MAX)}
 
 각 사분면에 대해 최댓값을 구한다.
 $K$개의 feature 각각에 대해 따로 적용한다.
-Training 할 때와 testing 할 때 같은 pooling 방식을 사용한다.
+Training 할 때와 testing 할 때 모두 같은 pooling 방식을 사용한다.
 
-\subsubsection{Stochastic pooling}
+\subsubsection{Stochastic pooling (STOCH)}
 
-\subsubsection{Stochastic max pooling}
+Zeiler et al.(2013)의 연구에서 소개된 방식이다.
+Training 할 때와 testing 할 때 서로 다른 pooling 방식을 사용한다.
+Training 할 때에는, 각 사분면을 region이라고 할 때, activation들을 region에 속한 모든 activation의 합으로 나누어서 확률을 구한다.
+그리고 한 region에서 이 확률에 따라 activation 중 하나를 고른다.
+Testing 할 때에는, training 할 때와 같이 확률을 구하고 이 확률로 activation의 기댓값을 구한다.
+
+기존 연구(ibid.)에서는 사분면으로 나누지 않았으며, region의 크기는 3x3이었다. MAX, AVG에 비해 더 좋은 성능을 내었다.
+
+\subsubsection{Stochastic max pooling (STOCHMAX)}
+
+Huang et al.(2015)의 연구에서 소개된 방식이다.
+Training 할 때와 testing 할 때 서로 다른 pooling 방식을 사용한다.
+Training 할 때에는, 각 사분면을 region이라고 할 때, region에 속한 activation들을 0.5의 확률로 버리고 남은 것 중에 최댓값을 고른다.
+Testing 할 때에는, region에서 큰 activation부터 차례로 1/2, 1/4, 1/8의 가중치를 곱해 더한다.
+
+기존 연구(ibid.)에서는 사분면으로 나누지 않았으며, region의 크기는 3x3이었다. STOCH 등에 비해 더 좋은 성능을 내었다.
 
 \subsection{기타 구현}
 
@@ -237,8 +253,6 @@ triangle k-means는 activation에 ReLU를 적용한 것과 사실상 같음
 misleading 지적
 
 \end{multicols}
-
-\pagebreak
 
 \section*{참고 문헌}
 

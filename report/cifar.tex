@@ -16,6 +16,7 @@
 \usepackage{enumitem}
 \usepackage{float}
 \usepackage[skip=5pt]{caption}
+\usepackage{hyperref}
 
 \graphicspath{ {images/} }
 
@@ -54,7 +55,7 @@ CIFAR-10 이미지 분류기 구현 및 실험}
 
 \pagebreak
 
-\begin{multicols}{2}
+\begin{multicols*}{2}
 
 \section{서론}
 
@@ -238,21 +239,69 @@ Testing 할 때에는, region에서 큰 activation부터 차례로 1/2, 1/4, 1/8
 
 \section{실험 결과}
 
-각 pooling이 overfitting을 하는지 보고 논문의 결과에 대한 오차 분석을 하는 것이 목적
-cross validation은 하지 않았다.
+\subsection{Pooling에 따른 정확도 비교}
+
+각 pooling 방식에 따른 차이를 볼 수 있었다.
+Training, testing에 대한 분류 정확도는 그림 \ref{fig:accuracy}와/과 같았고, testing에 대한 분류 정확도의 99\% 신뢰구간은 그림 \ref{fig:error_bar}와/과 같았다.
+
+\begin{figure}[H]
+\includegraphics[width=\linewidth]{accuracy}
+\caption{Pooling과 Train/Test 정확도(\%)}
+\label{fig:accuracy}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=\linewidth]{error_bar}
+\caption{Pooling과 Test 정확도(\%) 99\% 신뢰구간}
+\label{fig:error_bar}
+\end{figure}
+
+안타깝게도 모든 pooling 방식에 있어서 testing 분류 정확도가 기존의 SUM 방식을 넘지 못했다.
+특히, AVG 방식의 경우 SUM에 비해 더 정밀한 standardization을 하게 되어 조금이라도 더 높은 성능을 얻을 수 있기를 기대했으나 그렇지 못했다.
+SUM 방식의 정확도는 $77.61(\pm 0.23)$\%이었고, AVG 방식의 정확도는 $76.79(\pm 0.16)$\%이었다.
+즉, 두 방식의 신뢰구간이 서로 완전히 분리되어 통계적으로 유의미하게 SUM 방식이 더 높은 성능을 보였다.
+정밀한 standardization의 효과는 testing 분류 정확도의 향상으로 나타나는 대신 regularization에서 나타났다.
+SUM 방식의 training 정확도와 testing 정확도의 차이는 $8.469$\%p인데 반해 AVG 방식은 $5.882$\%p 밖에 되지 않았다.
+학습 과정에서 cross validation을 통해 하이퍼 파라미터를 조절하는 과정이 있다면, AVG 방식이 training 정확도와 testing 정확도의 차이가 적기 때문에 파라미터 조절에 있어서 testing 정확도를 높이는 방향을 예측 하기에 더 적합할 수 있을 것이다.
+
+한가지 흥미로운 점은 선행 연구(2011)에서의 정확도(SUM 방식)는 $77.9$\%로서 신뢰구간의 상한 $77.84$\%를 약 $0.06$\%p 넘어서는 높은 성능을 냈다는 것이다.
+유효 숫자를 맞추기 위해 선행 연구의 정확도의 유효 숫자를 한 자리 늘려서 가장 작은 값을 취한다 하더라도 $77.85$\%가 되는데 이 또한 신뢰구간의 상한 보다 $0.01$\%p 더 크다.
+본 실험의 표본은 적은 편(10개)이기 때문에 단정 지을 수는 없지만, 선행 연구에서 높은 성능을 내기 위해 여러 번 수행하고 가장 높은 성능으로 표기하였을 가능성이 크다는 의심을 지울 수 없다.
+
+MAX 방식과 SUM 방식을 비교하였을 때에는 MAX 방식의 경우는 overfitting이 아주 크게 나타남을 알 수 있다.
+MAX 방식의 training 데이터에 대한 분류 정확도는 SUM 방식의 정확도 $86.082(\pm 0.067)$\%에 비해 압도적으로 높은 $92.655(\pm 0.088)$\%로 나타났지만, testing 데이터에 대한 분류 정확도는 $71.41(\pm 0.26)$\%으로 SUM 방식의 정확도에 비해 현저히 낮았다.
+MAX 방식은 극단적인 값만 뽑는 pooling 방식이기 때문에 일반화를 잘 못한다고 해석할 수 있다.
+
+STOCH 방식과 STOCHMAX 방식은 각각 Zeiler et al.(2013)의 연구와 Huang et al.(2015)의 연구에서 AVG, MAX 방식에 비해 높은 성능을 낸다고 자랑한 방식이다.
+그러나 본 실험에서는 둘 다 SUM 방식에 비해 아주 낮은 성능을 보였다.
+STOCH 방식의 testing 데이터에 대한 분류 정확도는 $69.69(\pm 0.09)$\%이었고, STOCHMAX 방식의 정확도는 $71.94(\pm 0.40)$\%이었다.
+STOCHMAX 방식이 STOCH 방식에 비해 성능이 더 높게 나온 것은 기존 연구(2015)와 동일한 결과였다.
+STOCHMAX 방식을 MAX 방식과 비교해보면 testing 정확도의 신뢰구간이 서로 겹쳐서 통계적으로 유의미한 차이는 없었다.
+이 두 가지 새로운 pooling 방식이 본 실험에서 좋은 성능을 내지 못한 이유는 모델의 구조가 다르기 때문이라고 추측할 수 있다.
+첫번째로, 본 실험은 선행 연구(2011)에서 정해놓은 하이퍼 파라미터를 그대로 사용하였는데 이 파라미터는 SUM 방식에 맞춰진 것이다.
+두번째로, pooling을 적용한 region의 크기가 본 실험에서는 약 14x14로 두 기존 연구(2013, 2015)에서 한 region의 크기인 3x3에 비해 지나치게 크다.
+
+\subsection{Confusion matrix}
 
 confusion matrix
+층이 더 필요함
+(TODO)
+
+\subsection{수행 시간 비교}
+
+(TODO)
 
 \section{결론}
 
+각 pooling이 overfitting을 하는지 보고 논문의 결과에 대한 오차 분석을 하는 것이 목적
+cross validation은 하지 않았다.
 하이퍼 파라미터 때문인듯?
 triangle k-means는 activation에 ReLU를 적용한 것과 사실상 같음
 
 의의
 오차 분석
+표본이 적긴 하지만 선행 논문이 사기
 misleading 지적
-
-\end{multicols}
 
 \section*{참고 문헌}
 
@@ -262,9 +311,17 @@ misleading 지적
 \item Zeiler, M. D., \& Fergus, R. (2013). Stochastic pooling for regularization of deep convolutional neural networks. \textit{arXiv preprint arXiv:1301.3557}.
 \end{itemize}
 
+\end{multicols*}
+
+\pagebreak
+
 \section*{부록}
 
 \subsection*{실험 결과 표}
+
+(TODO)
+
+\subsection*{K-means 중심점}
 
 (TODO)
 
@@ -383,6 +440,30 @@ function XCi = pooling_stoch_test(patches, prows, pcols)
   q4 = for_quad(patches(halfr+1:end, halfc+1:end, :));
   XCi = [q1(:);q2(:);q3(:);q4(:)]';
 end
+\end{lstlisting}
+
+\subsection*{코드 변경 사항 전체}
+
+Github diff 링크: \url{https://goo.gl/qgUbqF}
+
+변경 사항 통계(일부):
+\begin{lstlisting}
+    src/confusion_matrix.m         |   7 +
+    src/extract_features.m         |  43 ++-
+    src/kmeans_demo.m              |  69 +---
+    src/minFunc/lbfgsC.mex         | Bin 0 -> 13080 bytes
+    src/minFunc/mcholC.mex         | Bin 0 -> 21194 bytes
+    src/pooling_avg.m              |   9 +
+    src/pooling_max.m              |   9 +
+    src/pooling_stoch_test.m       |  15 +
+    src/pooling_stoch_train.m      |  21 ++
+    src/pooling_stochmax_test.m    |  17 +
+    src/pooling_stochmax_train.m   |  15 +
+    src/pooling_sum.m              |   9 +
+    src/run_classifier.m           |  58 ++++
+    src/run_kmeans.m               |   2 +-
+    src/show_centroids.m           |   2 -
+    83 files changed, 416 insertions(+), 728 deletions(-)
 \end{lstlisting}
 
 \end{document}

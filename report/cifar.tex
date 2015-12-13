@@ -32,6 +32,7 @@
 \pagenumbering{arabic}
 \setlength\columnsep{20pt}
 \setlist[enumerate]{itemsep=0mm}
+\lstset{language=Matlab,lineskip={-1.5pt}}
 
 \begin{document}
 
@@ -65,7 +66,7 @@ Coates et al.(2011)의 연구에서는 무감독 학습을 통해 얻은 feature
 성능(분류 정확도)에 있어서도 K-means(hard) 알고리즘을 사용했을 때에는 다른 알고리즘들을 사용했을 때 보다 낮은 성능을 보였으며, K-means(triangle) 알고리즘을 사용했을 때 비로소 가장 좋은 성능을 내었다.
 이 사실에 주목하여 soft한 특성을 갖도록 다양하게 변형한 K-means 알고리즘들에 대해서도 실험 해보기로 하였다.
 또한, 선행 연구에서는 convolutional feature extraction에 사용한 receptive field 크기, stride, feature 개수, whitening 여부 등의 하이퍼 파라미터들은 다양하게 바꿔보며 실험한 데에 반해서, pooling 방식은 sum만을 사용하였다.
-이 사실에 의문을 갖고 average pooling, maximum pooling, stochastic pooling(Zeiler et al., 2013), stochastic max-pooling(Huang et al., 2015) 등의 다양한 pooling 방식에 대해서도 실험 해보기로 하였다.
+이 사실에 의문을 갖고 average pooling, max pooling, stochastic pooling(Zeiler et al., 2013), stochastic max-pooling(Huang et al., 2015) 등의 다양한 pooling 방식에 대해서도 실험 해보기로 하였다.
 마지막으로, 선행 연구에서는 분류 정확도를에 대한 오차 범위가 드러나 있지 않다.
 다양한 soft K-means 알고리즘과 pooling 방식에 대한 비교를 더욱 정밀히 하기 위해, 여러번 실험하여 오차 범위까지 산출하여 분석 해보기로 하였다.
 
@@ -140,6 +141,7 @@ Translation-invariant한 feature 벡터를 얻기 위해, convolutional feature 
 종합하면, convolutional feature 추출을 통해 32x32x3 크기였던 입력 이미지는 27x27x1600 크기의 이미지 표현으로 확장된다(그림 \ref{fig:feature_extraction} 왼쪽).
 
 \subsection{Sum over quadrant pooling}
+\label{sec:quadrant_pooling}
 
 Convolution feature 추출에서 보았듯이 입력 이미지에 비해 이미지 표현의 크기는 훨씬 크다.
 이미지 표현에 pooling을 적용함으로써 weight sharing을 하여 차원을 줄인 feature 벡터를 구한다.
@@ -167,8 +169,9 @@ SVM 자체에 대한 설명은 생략한다.
 
 \section{추가 구현}
 
-본 실험을 위해, 일단 Coates의 웹페이지에서 데모 코드를 얻었다.
-MATLAB으로 작성되어 있었으며, 여기에 코드를 추가하여 실험하였다.
+본 실험을 위해, 일단 Coates의 웹페이지에서 MATLAB으로 작성된 데모 코드를 얻었다.
+데모 코드에는 앞 절에서 설명한 사항 외에 whitening 등 patch에 대한 normalization과 feature 벡터에 대한 standardization이 포함되어 있다.
+여기에 코드를 추가하여 실험하였다.
 
 \subsection{여러 soft한 K-means 알고리즘}
 
@@ -182,14 +185,33 @@ MATLAB으로 작성되어 있었으며, 여기에 코드를 추가하여 실험�
 본 연구에서는 데모 코드를 보고 나서야, 이 부분을 misleading 했다고 알게 되었다.
 결국 여러 soft한 K-means 알고리즘을 구현하여 비교하려던 초기 계획은 더이상 유효하지 않게 되었고, 따라서 진행할 수 없었다.
 
-GMM을 봤을 때에도 성능이 좋지 않았다.
-클러스터링 알고리즘 보다는 activation을 어떻게 구하는지가 중요
-이건 pooling의 일부로도 볼 수 있다
-(TODO)
+GMM은 대표적인 soft 클러스터링의 예로서 K-means를 일반화한 모델로 생각할 수 있다.
+선행 연구에서 GMM을 사용했을 때의 성능이 K-means(hard)를 사용했을 때보다 더 낮게, 즉 가장 낮았다.
+이 결과를 봤을 때 soft한 클러스터링 알고리즘을 사용하기 보다는 hard 클러스터링을 통해 먼저 중심점들을 구하고 난 이후에 activation을 어떻게 도출하는지가 성능 향상에 더 큰 영향을 미친다고 미루어 짐작할 수 있다.
+Actication을 어떻게 계산하고 처리할 것인지는 pooling 단계의 일부로도 볼 수 있으므로, pooling에서 여러 실험을 수행 하였다.
 
 \subsection{여러 pooling 방식}
 
-(TODO)
+\ref{sec:quadrant_pooling}절에서 사분면에 대한 sum pooling에 대해 설명하였다.
+이 외에 average pooling (AVG), max pooling (MAX), stochastic pooling (STOCH), stochastic max pooling (STOCHMAX)을 구현하였다.
+이들도 마찬가지로 사분면에 대해 pooling 하도록 하였다.
+부록에 MATLAB 구현을 첨부하였다.
+
+\subsubsection{Average pooling}
+
+각 사분면에 대해 평균값을 구한다.
+각 사분면의 크기가 13x13, 14x14 등으로 서로 달라서 feature 벡터를 standardization 하더라도 sum pooling과 결과가 다르다.
+Training 할 때와 testing 할 때 같은 pooling 방식을 사용한다.
+
+\subsubsection{Max pooling}
+
+각 사분면에 대해 최댓값을 구한다.
+$K$개의 feature 각각에 대해 따로 적용한다.
+Training 할 때와 testing 할 때 같은 pooling 방식을 사용한다.
+
+\subsubsection{Stochastic pooling}
+
+\subsubsection{Stochastic max pooling}
 
 \subsection{기타 구현}
 
@@ -200,13 +222,23 @@ imwrite?
 
 \section{실험 결과}
 
+각 pooling이 overfitting을 하는지 보고 논문의 결과에 대한 오차 분석을 하는 것이 목적
+cross validation은 하지 않았다.
+
+confusion matrix
+
 \section{결론}
 
+하이퍼 파라미터 때문인듯?
 triangle k-means는 activation에 ReLU를 적용한 것과 사실상 같음
 
 의의
 오차 분석
 misleading 지적
+
+\end{multicols}
+
+\pagebreak
 
 \section*{참고 문헌}
 
@@ -216,6 +248,127 @@ misleading 지적
 \item Zeiler, M. D., \& Fergus, R. (2013). Stochastic pooling for regularization of deep convolutional neural networks. \textit{arXiv preprint arXiv:1301.3557}.
 \end{itemize}
 
-\end{multicols}
+\section*{부록}
+
+\subsection*{실험 결과 표}
+
+(TODO)
+
+\subsection*{추가한 pooling 코드}
+
+\begin{lstlisting}
+% pooling_sum.m
+function XCi = pooling_sum(patches, prows, pcols)
+  halfr = round(prows/2);
+  halfc = round(pcols/2);
+  q1 = sum(sum(patches(1:halfr, 1:halfc, :), 1),2);
+  q2 = sum(sum(patches(halfr+1:end, 1:halfc, :), 1),2);
+  q3 = sum(sum(patches(1:halfr, halfc+1:end, :), 1),2);
+  q4 = sum(sum(patches(halfr+1:end, halfc+1:end, :), 1),2);
+  XCi = [q1(:);q2(:);q3(:);q4(:)]';
+end
+
+% pooling_avg.m
+function XCi = pooling_avg(patches, prows, pcols)
+  halfr = round(prows/2);
+  halfc = round(pcols/2);
+  q1 = sum(sum(patches(1:halfr, 1:halfc, :), 1),2) ...
+       / (halfr * halfc);
+  q2 = sum(sum(patches(halfr+1:end, 1:halfc, :), 1),2) ...
+       / ((prows - halfr) * halfc);
+  q3 = sum(sum(patches(1:halfr, halfc+1:end, :), 1),2) ...
+       / (halfr * (pcols - halfc));
+  q4 = sum(sum(patches(halfr+1:end, halfc+1:end, :), 1),2) ...
+       / ((prows - halfr) * (pcols - halfc));
+  XCi = [q1(:);q2(:);q3(:);q4(:)]';
+end
+
+% pooling_max.m
+function XCi = pooling_max(patches, prows, pcols)
+  halfr = round(prows/2);
+  halfc = round(pcols/2);
+  q1 = max(max(patches(1:halfr, 1:halfc, :)),[],2);
+  q2 = max(max(patches(halfr+1:end, 1:halfc, :)),[],2);
+  q3 = max(max(patches(1:halfr, halfc+1:end, :)),[],2);
+  q4 = max(max(patches(halfr+1:end, halfc+1:end, :)),[],2);
+  XCi = [q1(:);q2(:);q3(:);q4(:)]';
+end
+
+% pooling_stochmax_train.m
+function XCi = pooling_stochmax_train(patches, prows, pcols)
+  function q = for_quad(sub)
+    [r, c, z] = size(sub);
+    sub = reshape(sub, 1, r * c, z);
+    samp = rand(1, r * c, z) > 0.5;
+    q = max(sub .* samp);
+  end
+  halfr = round(prows/2);
+  halfc = round(pcols/2);
+  q1 = for_quad(patches(1:halfr, 1:halfc, :));
+  q2 = for_quad(patches(halfr+1:end, 1:halfc, :));
+  q3 = for_quad(patches(1:halfr, halfc+1:end, :));
+  q4 = for_quad(patches(halfr+1:end, halfc+1:end, :));
+  XCi = [q1(:);q2(:);q3(:);q4(:)]';
+end
+
+% pooling_stochmax_test.m
+function XCi = pooling_stochmax_test(patches, prows, pcols)
+  function q = for_quad(sub)
+    [r, c, z] = size(sub);
+    prob = zeros(1, r * c);
+    prob(1) = 1/2; prob(2) = 1/4; prob(3) = 1/8;
+    sub = reshape(sub, 1, r * c, z);
+    sorted = sort(sub, 'descend');
+    q = sum(bsxfun(@times, sorted, prob));
+  end
+  halfr = round(prows/2);
+  halfc = round(pcols/2);
+  q1 = for_quad(patches(1:halfr, 1:halfc, :));
+  q2 = for_quad(patches(halfr+1:end, 1:halfc, :));
+  q3 = for_quad(patches(1:halfr, halfc+1:end, :));
+  q4 = for_quad(patches(halfr+1:end, halfc+1:end, :));
+  XCi = [q1(:);q2(:);q3(:);q4(:)]';
+end
+
+% pooling_stoch_train.m
+function XCi = pooling_stoch_train(patches, prows, pcols)
+  function q = for_quad(sub)
+    [r, c, z] = size(sub);
+    sub = reshape(sub, 1, r * c, z);
+    sub_sum = sum(sub);
+    sub_prob = bsxfun(@rdivide, sub, sub_sum);
+    sub_prob = [zeros(1, 1, z) cumsum(sub_prob)];
+    q = zeros(1, 1, z);
+    for i = 1:z
+      idx = sum(rand >= sub_prob(:, :, i));
+      q(:, :, i) = sub(1, idx, i);
+    end
+  end
+  halfr = round(prows/2);
+  halfc = round(pcols/2);
+  q1 = for_quad(patches(1:halfr, 1:halfc, :));
+  q2 = for_quad(patches(halfr+1:end, 1:halfc, :));
+  q3 = for_quad(patches(1:halfr, halfc+1:end, :));
+  q4 = for_quad(patches(halfr+1:end, halfc+1:end, :));
+  XCi = [q1(:);q2(:);q3(:);q4(:)]';
+end
+
+% pooling_stoch_test.m
+function XCi = pooling_stoch_test(patches, prows, pcols)
+  function q = for_quad(sub)
+    bj = sum(sum(sub .^ 2, 1), 2);
+    bm = sum(sum(sub, 1), 2);
+    q = bj ./ bm;
+    q(isnan(q)) = 0;
+  end
+  halfr = round(prows/2);
+  halfc = round(pcols/2);
+  q1 = for_quad(patches(1:halfr, 1:halfc, :));
+  q2 = for_quad(patches(halfr+1:end, 1:halfc, :));
+  q3 = for_quad(patches(1:halfr, halfc+1:end, :));
+  q4 = for_quad(patches(halfr+1:end, halfc+1:end, :));
+  XCi = [q1(:);q2(:);q3(:);q4(:)]';
+end
+\end{lstlisting}
 
 \end{document}
